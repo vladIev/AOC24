@@ -9,8 +9,10 @@ include("${CMAKE_SOURCE_DIR}/cmake/utils.cmake")
 
 find_package(GTest REQUIRED)
 find_package(benchmark REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
+
 include_directories(${benchmark_INCLUDE_DIRS})
+add_subdirectory("${CMAKE_SOURCE_DIR}/src")
+
 
 add_main_targets()
 add_test_targets()

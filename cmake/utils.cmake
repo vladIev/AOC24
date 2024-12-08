@@ -1,7 +1,7 @@
 function(add_main_targets)
     # Parse function arguments
     set(LIBRARIES ${ARGN})
-    add_targets("${CMAKE_SOURCE_DIR}/src/*.m.cpp" ${LIBRARIES})
+    add_targets("${CMAKE_CURRENT_LIST_DIR}/*.m.cpp" ${LIBRARIES})
     message(STATUS "Created targets: ${ADDED_TARGETS}")
 endfunction(add_main_targets)
 
@@ -9,7 +9,7 @@ endfunction(add_main_targets)
 function(add_test_targets)
     # Parse function arguments
     set(LIBRARIES ${ARGN} gtest::gtest)
-    add_targets("${CMAKE_SOURCE_DIR}/src/*.g.cpp" ${LIBRARIES})
+    add_targets("${CMAKE_CURRENT_LIST_DIR}/*.g.cpp" ${LIBRARIES})
     
     foreach(TARGET ${TARGETS})
         add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
@@ -22,7 +22,7 @@ endfunction(add_test_targets)
 function(add_benchmark_targets)
     # Parse function arguments
     set(LIBRARIES ${ARGN} benchmark::benchmark_main)
-    add_targets("${CMAKE_SOURCE_DIR}/src/*.b.cpp" ${LIBRARIES})
+    add_targets("${CMAKE_CURRENT_LIST_DIR}/*.b.cpp" ${LIBRARIES})
     message(STATUS "Created benchmark targets: ${ADDED_TARGETS}")
 endfunction(add_benchmark_targets)
 
