@@ -62,7 +62,7 @@ bool isLevelSafe(const std::vector<int32_t>& levels, bool protection)
 			{
 				auto copy = levels;
 				copy.erase(std::next(std::begin(copy), j));
-				if(isLevelSafe(copy, false);)
+				if(isLevelSafe(copy, false))
 				{
 					return true;
 				}
