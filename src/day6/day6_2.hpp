@@ -1,6 +1,8 @@
 #ifndef DAY6_2_HPP
 #define DAY6_2_HPP
+#include "day6_1.hpp"
 #include "day6_input.hpp"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -9,14 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-enum class Direction
-{
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
-};
-
+using namespace d61;
 bool canLeaveMap(const auto& obstaclesX, const auto& obstaclesY, Position guardPosition)
 {
 	const auto mapWidth = obstaclesY.size();
@@ -26,95 +21,57 @@ bool canLeaveMap(const auto& obstaclesX, const auto& obstaclesY, Position guardP
 		100, PositionHash(mapWidth));
 
 	auto currentDirection = Direction::UP;
-	bool isGuardLeftMap = false;
-	while(!isGuardLeftMap)
+	bool isLeftMap = false;
+	while(!isLeftMap)
 	{
+		Position newPos;
 		switch(currentDirection)
 		{
 		case Direction::UP: {
-			auto it = std::crbegin(obstaclesY[guardPosition.x]);
-			auto end = std::crend(obstaclesY[guardPosition.x]);
-			while(it != end && *it > guardPosition.y)
-			{
-				++it;
-			}
-
-			size_t posY = it == end ? 0 : (*it + 1);
-			isGuardLeftMap = it == end;
-			const auto [_, success] =
-				hittedObstacles[Position{.x = guardPosition.x, .y = posY}].insert(currentDirection);
+			std::tie(newPos, isLeftMap) = goUp(obstaclesY, guardPosition);
+			const auto [_, success] = hittedObstacles[newPos].insert(currentDirection);
 			if(!success)
 			{
 				return false;
 			}
 
-			guardPosition.y = posY;
 			currentDirection = Direction::RIGHT;
 			break;
 		}
 		case Direction::DOWN: {
-			const auto end = std::cend(obstaclesY[guardPosition.x]);
-			auto it = std::cbegin(obstaclesY[guardPosition.x]);
-			while(it != end && *it < guardPosition.y)
-			{
-				++it;
-			}
-
-			size_t posY = it == end ? mapHeight - 1 : (*it - 1);
-			isGuardLeftMap = it == end;
-			const auto [_, success] =
-				hittedObstacles[Position{.x = guardPosition.x, .y = posY}].insert(currentDirection);
+			std::tie(newPos, isLeftMap) = goDown(obstaclesY, guardPosition, mapHeight);
+			const auto [_, success] = hittedObstacles[newPos].insert(currentDirection);
 			if(!success)
 			{
 				return false;
 			}
 
-			guardPosition.y = posY;
 			currentDirection = Direction::LEFT;
 			break;
 		}
 		case Direction::LEFT: {
-			const auto end = std::crend(obstaclesX[guardPosition.y]);
-			auto it = std::crbegin(obstaclesX[guardPosition.y]);
-			while(it != end && *it > guardPosition.x)
-			{
-				++it;
-			}
-
-			size_t posX = it == end ? 0 : (*it + 1);
-			isGuardLeftMap = it == end;
-			const auto [_, success] =
-				hittedObstacles[Position{.x = posX, .y = guardPosition.y}].insert(currentDirection);
+			std::tie(newPos, isLeftMap) = goLeft(obstaclesX, guardPosition);
+			const auto [_, success] = hittedObstacles[newPos].insert(currentDirection);
 			if(!success)
 			{
 				return false;
 			}
 
-			guardPosition.x = posX;
 			currentDirection = Direction::UP;
 			break;
 		}
 		case Direction::RIGHT:
-			const auto end = std::cend(obstaclesX[guardPosition.y]);
-			auto it = std::cbegin(obstaclesX[guardPosition.y]);
-			while(it != end && *it < guardPosition.x)
-			{
-				++it;
-			}
-
-			size_t posX = it == end ? mapWidth - 1 : (*it - 1);
-			isGuardLeftMap = it == end;
-			const auto [_, success] =
-				hittedObstacles[Position{.x = posX, .y = guardPosition.y}].insert(currentDirection);
+			std::tie(newPos, isLeftMap) = goRight(obstaclesX, guardPosition, mapWidth);
+			const auto [_, success] = hittedObstacles[newPos].insert(currentDirection);
 			if(!success)
 			{
 				return false;
 			}
 
-			guardPosition.x = posX;
 			currentDirection = Direction::DOWN;
 			break;
 		}
+		guardPosition = newPos;
 	}
 
 	return true;
@@ -131,7 +88,7 @@ uint64_t countPossibleLoops(const std::unordered_set<Position, PositionHash>& pa
 	uint64_t cntr = 0;
 	auto copyObstX = obstaclesX;
 	auto copyObstY = obstaclesY;
-	for(const auto passedCell : passedCells)
+	for(const auto& passedCell : passedCells)
 	{
 		if(visitedCells.contains(passedCell) || passedCell == startPosition) continue;
 
@@ -140,16 +97,20 @@ uint64_t countPossibleLoops(const std::unordered_set<Position, PositionHash>& pa
 		const auto origX = refX;
 		const auto origY = refY;
 
+		// Add a new obstacle
 		refX.push_back(passedCell.x);
 		refY.push_back(passedCell.y);
 		std::sort(refX.begin(), refX.end());
 		std::sort(refY.begin(), refY.end());
-		const auto canLeave = canLeaveMap(copyObstX, copyObstY, startPosition);
 
+		const auto canLeave = canLeaveMap(copyObstX, copyObstY, startPosition);
 		cntr += !canLeave;
 
+		// Restore original list of obstacles
 		copyObstX[passedCell.y] = origX;
 		copyObstY[passedCell.x] = origY;
+
+		// No need to check the same cell twice
 		visitedCells.insert(passedCell);
 	}
 	return cntr;
