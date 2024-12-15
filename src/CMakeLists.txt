@@ -7,6 +7,7 @@ add_subdirectory("day6")
 add_subdirectory("day7")
 add_subdirectory("day8")
 add_subdirectory("day9")
+add_subdirectory("day10")
 
 
 
